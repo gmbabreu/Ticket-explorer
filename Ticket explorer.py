@@ -18,10 +18,7 @@ BUDGET = ""
 # Add any cities you want to be excluded
 scratch_locations = []
 
-
-
-
-def explore():
+def main():
     """Function for navigating all the websites"""
     with open('Ticket_explorer.txt', 'w') as f:
         # iterate through destinations 
@@ -42,52 +39,53 @@ def explore():
 
 def kayak_map(f):
     """Goes throught the kayak map to find the cheapest flight worldwide"""
-    
+    saved_cities = []
+    saved_prices = []
+    f.write("link:https://www.kayak.com/explore/"+AIRPORT+"-anywhere?budget="+BUDGET+"\n\n")
+
     # Search by regions
     # Central + South America (Budget set lower)
-    f.write("\nCentral America\n\n")
-    link = "https://www.kayak.com/explore/"+AIRPORT+"-258cy?budget="+"250"
-    kayak_finder(link, f)
+    link = "https://www.kayak.com/explore/"+AIRPORT+"-258cy?budget="+BUDGET
+    kayak_finder(link, saved_cities, saved_prices)
     
     # Southern Africa
-    f.write("\nSouthern Africa\n\n")
     link = "https://www.kayak.com/explore/"+AIRPORT+"-2001945fr?budget="+BUDGET
-    kayak_finder(link, f)
+    kayak_finder(link, saved_cities, saved_prices)
 
     # Northen Africa + Southern europe + Middle East
-    f.write("\nMediterranean\n\n")
     link = "https://www.kayak.com/explore/"+AIRPORT+"-2000178fr?budget="+BUDGET
-    kayak_finder(link, f)
+    kayak_finder(link, saved_cities, saved_prices)
 
     # Cental + Eastern Europe
-    f.write("\nEurope\n\n")
     link = "https://www.kayak.com/explore/"+AIRPORT+"-2001913fr?budget="+BUDGET
-    kayak_finder(link, f)
+    kayak_finder(link, saved_cities, saved_prices)
 
     # East Asia
-    f.write("\nAsia\n\n")
     link = "https://www.kayak.com/explore/"+AIRPORT+"-121cy?budget="+BUDGET
-    kayak_finder(link, f)
+    kayak_finder(link, saved_cities, saved_prices)
 
     # Asia
     link = "https://www.kayak.com/explore/"+AIRPORT+"-2001893fr?budget="+BUDGET
-    kayak_finder(link, f)
+    kayak_finder(link, saved_cities, saved_prices)
 
     # Australia
-    f.write("\nAustralia\n\n")
     link = "https://www.kayak.com/explore/"+AIRPORT+"-177cy?budget="+BUDGET
-    kayak_finder(link, f)
+    kayak_finder(link, saved_cities, saved_prices)
 
     # Pacific Islands 
-    f.write("\nPacific Islands\n\n")
     link = "https://www.kayak.com/explore/"+AIRPORT+"-159cy?budget="+BUDGET
-    kayak_finder(link, f)
+    kayak_finder(link, saved_cities, saved_prices)
 
-def kayak_finder(link, f):
+
+    #Write cities into the file
+    for i in range(len(saved_cities)):
+        try:
+            f.write(saved_cities[i]+"\n"+saved_prices[i]+"\n\n")
+        except UnicodeEncodeError:
+            f.write("Cant encode city name\n"+saved_prices[i]+"\n\n")
+
+def kayak_finder(link, saved_cities, saved_prices):
     """Filters the flights"""
-
-    f.write("link:\n"+link+"\n\n")
-
     # Retrieve HTML and destinations
     driver.get(link)
     time.sleep(10)
@@ -107,11 +105,14 @@ def kayak_finder(link, f):
 
         # Check if city is in the final list or in the scratch list
         if (city not in scratch_locations):
-            try:
-                f.write(city+"\n"+price+"\n\n")
-            except UnicodeEncodeError:
-                f.write("Cant encode city name\n"+price+"\n\n")
-
+            #Check if this city is already in the list
+            if (city in saved_cities):
+                price_index = saved_cities.index(city)
+                if (price < saved_prices[price_index]):
+                    saved_prices[price_index]= price
+            else:
+                saved_cities.append(city)
+                saved_prices.append(price)
 
 def google(f):
     """Goes through google flights world map"""
@@ -122,6 +123,11 @@ def google(f):
     link = "https://www.google.com/travel/explore?tfs=CBwQAxooagwIAhIIL20vMDFjeF8SCjIwMjItMTAtMjdyDAgEEggvbS8wMXR6aBooagwIBBIIL20vMDF0emgSCjIwMjItMTAtMzFyDAgCEggvbS8wMWN4X3ACggENCP___________wEQA0ABSAGYAQGyAQIgAQ&tfu=GgA"
     google_finder(link, f, "250")
     
+    # Europe   
+    f.write("\nEurope\n\n")
+    link = "https://www.google.com/travel/explore?tfs=CBwQAxooagwIAhIIL20vMDFjeF8SCjIwMjItMTAtMjdyDAgEEggvbS8wMmo5ehooagwIBBIIL20vMDJqOXoSCjIwMjItMTAtMzFyDAgCEggvbS8wMWN4X3ACggENCP___________wEQA0ABSAGYAQGyAQIgAQ&tfu=GgA"
+    google_finder(link, f, BUDGET)
+
     # Caribbean (lower budget flights)
     f.write("\nCaribbean\n\n")
     link = "https://www.google.com/travel/explore?tfs=CBwQAxooagwIAhIIL20vMDFjeF8SCjIwMjItMTAtMjdyDAgEEggvbS8wMjYxbRooagwIBBIIL20vMDI2MW0SCjIwMjItMTAtMzFyDAgCEggvbS8wMWN4X3ACggENCP___________wEQA0ABSAGYAQGyAQIgAQ&tfu=GgA"
@@ -130,11 +136,6 @@ def google(f):
     # Africa
     f.write("\nAfrica\n\n")
     link = "https://www.google.com/travel/explore?tfs=CBwQAxopagwIAhIIL20vMDFjeF8SCjIwMjItMTAtMjdyDQgEEgkvbS8wZGczbjEaKWoNCAQSCS9tLzBkZzNuMRIKMjAyMi0xMC0zMXIMCAISCC9tLzAxY3hfcAKCAQ0I____________ARADQAFIAZgBAbIBAiAB&tfu=GgA"
-    google_finder(link, f, BUDGET)
-
-    # Europe   
-    f.write("\nEurope\n\n")
-    link = "https://www.google.com/travel/explore?tfs=CBwQAxooagwIAhIIL20vMDFjeF8SCjIwMjItMTAtMjdyDAgEEggvbS8wMmo5ehooagwIBBIIL20vMDJqOXoSCjIwMjItMTAtMzFyDAgCEggvbS8wMWN4X3ACggENCP___________wEQA0ABSAGYAQGyAQIgAQ&tfu=GgA"
     google_finder(link, f, BUDGET)
 
     # Asia
@@ -200,4 +201,5 @@ def skyscanner(f):
         f.write(city+"\n"+price+"\n\n")
         i+=1
 
-explore()
+if __name__ == "__main__":
+   main()
