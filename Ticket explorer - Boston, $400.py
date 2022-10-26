@@ -60,7 +60,7 @@ def kayak_map(f):
     f.write("link:https://www.kayak.com/explore/"+AIRPORT+"-anywhere?budget="+BUDGET+"\n\n")
 
     # Search by regions
-    # Central + South America (Budget set lower)
+    # Central + South America 
     link = "https://www.kayak.com/explore/"+AIRPORT+"-258cy?budget="+BUDGET
     kayak_finder(link, saved_cities, saved_prices)
     
